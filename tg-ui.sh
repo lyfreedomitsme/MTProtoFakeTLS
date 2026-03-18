@@ -104,7 +104,7 @@ function show_link() {
     echo -e "🔑 Секрет: ${YELLOW}${SECRET}${NC}"
     echo -e "🎭 Fake TLS: ${BLUE}${FAKE_DOMAIN}${NC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "🔗 Ссылка (нажмите для автоподключения):"
+    echo "🔗 Ссылка для подключения:"
     echo -e "${GREEN}tg://proxy?server=${SERVER_IP}&port=${PORT}&secret=${SECRET}${NC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
