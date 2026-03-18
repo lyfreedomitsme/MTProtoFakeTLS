@@ -130,10 +130,33 @@ function set_domain() {
 }
 
 function stop_proxy() {
-    echo -e "\n🛑 Остановка прокси..."
+    echo -e "\n🛑 Остановка и удаление контейнера прокси..."
     sudo docker stop ${CONTAINER_NAME} >/dev/null 2>&1 || true
     sudo docker rm ${CONTAINER_NAME} >/dev/null 2>&1 || true
-    echo -e "${GREEN}Прокси успешно остановлен.${NC}"
+    echo -e "${GREEN}Контейнер прокси успешно остановлен и удален.${NC}"
+}
+
+function set_port() {
+    echo -e "\nТекущий порт: ${BLUE}${PORT}${NC}"
+    echo -n "Введите новый порт (например, 443, 8443) или оставьте пустым для отмены: "
+    read input
+    if [ -n "$input" ]; then
+        if [[ "$input" =~ ^[0-9]+$ ]] && [ "$input" -ge 1 ] && [ "$input" -le 65535 ]; then
+            PORT="$input"
+            save_config
+            echo -e "${GREEN}✅ Порт обновлен на $PORT${NC}"
+            echo -n "Перезапустить прокси для применения настроек? (y/n) [y]: "
+            read restart_ok
+            restart_ok=${restart_ok:-y}
+            if [[ "$restart_ok" == "y" || "$restart_ok" == "Y" ]]; then
+                start_proxy
+            fi
+        else
+            echo -e "${RED}❌ Неверный формат порта (от 1 до 65535)!${NC}"
+        fi
+    else
+        echo -e "${YELLOW}Отменено.${NC}"
+    fi
 }
 
 function show_menu() {
@@ -146,23 +169,25 @@ function show_menu() {
         fi
         echo "1) 🚀 Запустить / Перезапустить прокси"
         echo "2) 🎭 Изменить Fake TLS домен (Текущий: $FAKE_DOMAIN)"
-        echo "3) 🔗 Показать ссылку для подключения"
-        echo "4) 🛑 Остановить прокси"
-        echo "5) 📋 Посмотреть логи"
-        echo "6) ❌ Выход"
-        echo -n "Выберите действие (1-6): "
+        echo "3) 🔌 Изменить порт (Текущий: $PORT)"
+        echo "4) 🔗 Показать ссылку для подключения"
+        echo "5) 🛑 Остановить и удалить контейнер"
+        echo "6) 📋 Посмотреть логи"
+        echo "7) ❌ Выход"
+        echo -n "Выберите действие (1-7): "
         read choice
 
         case $choice in
             1) start_proxy ;;
             2) set_domain ;;
-            3) show_link ;;
-            4) stop_proxy ;;
-            5) 
+            3) set_port ;;
+            4) show_link ;;
+            5) stop_proxy ;;
+            6) 
                echo -e "\n📋 Последние логи контейнера:"
                sudo docker logs --tail 20 ${CONTAINER_NAME} || echo "Логи недоступны."
                ;;
-            6) echo "Выход..."; exit 0 ;;
+            7) echo "Выход..."; exit 0 ;;
             *) echo -e "${RED}Неверная команда!${NC}" ;;
         esac
     done
